@@ -1,6 +1,7 @@
 const sql = require('mssql');
 const config = require('./config');
 
+
 // const db = require('../db');
 
 actorsController = () => {
@@ -10,10 +11,11 @@ actorsController = () => {
                 ? `EXEC GetActor ${req.params.Id}`
                 : 'EXEC GetActors';
 
-            await sql.ConnectionError(config);
+            await sql.connect(config);
             const result = await sql.query(query);
             const records = result.recordset.map((record) => {
-                record.links = {}; record.links.self = `http://${req.headers.host}/api/actors/${record.Id}`;
+                record.links = {};
+                record.links.self = `http://${req.headers.host}/api/actors/${record.Id}`;
                 return record;
             });
 
