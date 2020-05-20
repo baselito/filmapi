@@ -1,23 +1,9 @@
-const sql = require('mssql');
-const config = require('./config');
-
-
-// const db = require('../db');
+const db = require('../db');
 
 actorsController = () => {
     get = async (req, res) => {
         try {
-            let query = req.params.Id > 0
-                ? `EXEC GetActor ${req.params.Id}`
-                : 'EXEC GetActors';
-
-            await sql.connect(config);
-            const result = await sql.query(query);
-            const records = result.recordset.map((record) => {
-                record.links = {};
-                record.links.self = `http://${req.headers.host}/api/actors/${record.Id}`;
-                return record;
-            });
+            const records = await db.get(req, res, 'actor');
 
             if (records.length == 0) {
                 res.status(404);
@@ -25,14 +11,45 @@ actorsController = () => {
             }
 
             return res.json(records);
-
         }
         catch (err) {
             return res.status(404);
         }
     };
 
-    return { get }
+    post = async (req, res) => {
+        try {
+            return await db.modify(req, res, 'AddActor', 'FirstName', 'LastName');
+        }
+        catch (err) {
+            res.status(500);
+            console.log(err);
+            return res.send('Unable to create.');
+        }
+    };
+
+    put = async (req, res) => {
+        try {
+            return await db.modify(req, res, 'UpdateActor', 'FirstName', 'LastName');
+        }
+        catch (err) {
+            res.status(500);
+            return res.send('Unable to update.');
+        }
+    };
+
+    remove = async (req, res) => {
+        try {
+            await db.modify(req, res, 'DeleteActor');
+        }
+        catch (err) {
+            console.log(err);
+            res.status(500);
+            return res.send('Unable to Delete.');
+        }
+    };
+
+    return { get, post, put, remove }
 }
 
 module.exports = actorsController;
